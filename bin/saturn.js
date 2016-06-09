@@ -1,47 +1,46 @@
 #!/usr/bin/env node
 
-var argv = require('yargs').argv;
-
-var command = argv._.shift();
-
-var path = require('path');
-// Map remaining arguments to paths inside the app
-var files = argv._.map(function(file) {
-  return path.join(process.cwd(), file);
-});
-
-require('../babel/server.babel'); // babel registration (runtime transpilation for node)
-require('dotenv').config({ silent: true });
-
-if (command === 'dev') {
-  var spawn = require('child_process').spawn;
-
-  var saturn = path.resolve(__dirname, './saturn.js');
-  var startDev = saturn + ' start-dev ' + argv.appServer;
-  var startDevApi = saturn + ' start-dev-api ' + argv.apiServer;
-  var watchClient = saturn + ' watch-client ' + argv.appClient;
-
-  var concurrently = path.resolve(__dirname, '../vendor/concurrently.js');
-  var child = spawn(concurrently, ['--kill-others', startDev, startDevApi, watchClient]);
-  child.stdout.on('data', function(d) { console.log(d.toString()); });
-  child.stderr.on('data', function(d) { console.err(d.toString()); });
-
-} else if (command === 'watch-client') {
-  require('../server/webpack-dev')(files[0]);
-} else {
-  if (process.env.NODE_ENV !== 'production') {
-    if (require('piping')({
-      hook: true,
-      ignore: /(\/\.|~$|\.json$)/i
-    })) {
-      run();
-    }
-  } else {
+if (process.env.NODE_ENV !== 'production') {
+  if (require('piping')({
+    hook: true,
+    ignore: /(\/\.|~$|\.json$)/i
+  })) {
     run();
   }
+} else {
+  run();
+}
 
-  function run() {
+function run() {
+  var argv = require('yargs').argv;
 
+  var command = argv._.shift();
+
+  var path = require('path');
+  // Map remaining arguments to paths inside the app
+  var files = argv._.map(function(file) {
+    return path.join(process.cwd(), file);
+  });
+
+  require('../babel/server.babel'); // babel registration (runtime transpilation for node)
+  require('dotenv').config({ silent: true });
+
+  if (command === 'dev') {
+    var spawn = require('child_process').spawn;
+
+    var saturn = path.resolve(__dirname, './saturn.js');
+    var startDev = saturn + ' start-dev ' + argv.appServer;
+    var startDevApi = saturn + ' start-dev-api ' + argv.apiServer;
+    var watchClient = saturn + ' watch-client ' + argv.appClient;
+
+    var concurrently = path.resolve(__dirname, '../vendor/concurrently.js');
+    var child = spawn(concurrently, ['--kill-others', startDev, startDevApi, watchClient]);
+    child.stdout.on('data', function(d) { console.log(d.toString()); });
+    child.stderr.on('data', function(d) { console.err(d.toString()); });
+
+  } else if (command === 'watch-client') {
+    require('../server/webpack-dev')(files[0]);
+  } else {
     if (command === 'start-dev') {
       /**
        * Define isomorphic constants.

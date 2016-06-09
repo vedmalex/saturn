@@ -1,3 +1,4 @@
+/* eslint-disable */
 //  enable runtime transpilation to use ES6/7 in node
 
 var fs = require('fs');
@@ -13,4 +14,5 @@ try {
   console.error(err);
 }
 
+config.ignore = require('./babel-exclude');
 require('babel-register')(config);
