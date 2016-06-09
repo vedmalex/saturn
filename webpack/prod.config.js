@@ -60,7 +60,7 @@ module.exports = {
       'src',
       'node_modules'
     ],
-    extensions: ['', '.json', '.js', '.jsx']
+    extensions: ['', '.js', '.jsx', '.json']
   },
   plugins: [
     new CleanPlugin([assetsPath], { root: projectRootPath }),

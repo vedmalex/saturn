@@ -41,7 +41,6 @@ function run() {
   require('../babel/server.babel'); // babel registration (runtime transpilation for node)
 
   if (command === 'dev') {
-
     var saturn = path.resolve(__dirname, './saturn.js');
     var startDev = saturn + ' start-dev ' + argv.appServer;
     var startDevApi = saturn + ' start-dev-api ' + argv.apiServer;
@@ -49,11 +48,18 @@ function run() {
 
     var concurrently = path.resolve(__dirname, '../vendor/concurrently.js');
     doSpawn(concurrently, ['--kill-others', startDev, startDevApi, watchClient]);
+  } else if (command === 'start') {
+    var saturn = path.resolve(__dirname, './saturn.js');
+    var startProd = saturn + ' start-prod ' + argv.appServer;
+    var startProdApi = saturn + ' start-prod-api ' + argv.apiServer;
+
+    var concurrently = path.resolve(__dirname, '../vendor/concurrently.js');
+    doSpawn(concurrently, ['--kill-others', startProd, startProdApi]);
   } else if (command === 'watch-client') {
     require('../server/webpack-dev')(files[0]);
   } else if (command === 'build') {
     require('../server/webpack-build')(files[0]);
-  } else if (command === 'start-dev') {
+  } else if (command === 'start-dev' || command == 'start-prod') {
     /**
      * Define isomorphic constants. XXX: where should these go
      */
@@ -66,10 +72,10 @@ function run() {
     var WebpackIsomorphicTools = require('webpack-isomorphic-tools');
     global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack/webpack-isomorphic-tools'))
       .development(__DEVELOPMENT__)
-      .server(path.resolve(__dirname, '..'), function() {
+      .server(process.cwd(), function() {
         require(files[0]);
       });
-  } else if (command === 'start-dev-api') {
+  } else if (command === 'start-dev-api' || command === 'start-prod-api') {
       require(files[0]);
   }
 }
