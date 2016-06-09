@@ -7,19 +7,30 @@ var CleanPlugin = require('clean-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var strip = require('strip-loader');
 
-var projectRootPath = path.resolve(__dirname, '../');
+var projectRootPath = process.cwd();
 var assetsPath = path.resolve(projectRootPath, './static/dist');
 
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 
+var fs = require('fs');
+var babelrc = fs.readFileSync(path.resolve(__dirname, '../babel/.babelrc'));
+var babelLoaderQuery = {};
+
+try {
+  babelLoaderQuery = JSON.parse(babelrc);
+} catch (err) {
+  console.error('==>     ERROR: Error parsing your .babelrc.');
+  console.error(err);
+}
+
 module.exports = {
   devtool: 'source-map',
-  context: path.resolve(__dirname, '..'),
+  context: projectRootPath,
   entry: {
     'main': [
-      './src/client.js'
+      // Client entry point is injected here by webpack-build.js
     ]
   },
   output: {
@@ -30,10 +41,11 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.jsx?$/, exclude: /node_modules/, loaders: [strip.loader('debug'), 'babel']},
+      { test: /\.jsx?$/, exclude: require('../babel/babel-exclude'), loaders: [strip.loader('debug'), 'babel?' + JSON.stringify(babelLoaderQuery)]},
       { test: /\.json$/, loader: 'json-loader' },
       { test: /\.less$/, loader: ExtractTextPlugin.extract('style', 'css?modules&importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap=true&sourceMapContents=true') },
       { test: /\.scss$/, loader: ExtractTextPlugin.extract('style', 'css?modules&importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap=true&sourceMapContents=true') },
+      { test: /\.css$/, loader: ExtractTextPlugin.extract('style', 'css?importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version') },
       { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
       { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
       { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/octet-stream" },
@@ -70,7 +82,8 @@ module.exports = {
     new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),
 
     // optimizations
-    new webpack.optimize.DedupePlugin(),
+    // XXX: Lovely peer deps issue: https://github.com/webpack/webpack/issues/1082
+    // new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compress: {

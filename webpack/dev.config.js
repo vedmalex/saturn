@@ -5,7 +5,10 @@ require('babel-polyfill');
 var fs = require('fs');
 var path = require('path');
 var webpack = require('webpack');
-var assetsPath = path.resolve('../static/dist');
+
+var projectRootPath = process.cwd();
+var assetsPath = path.resolve(projectRootPath, './static/dist');
+
 var host = (process.env.HOST || 'localhost');
 var port = (+process.env.PORT + 1) || 3001;
 
@@ -64,7 +67,7 @@ reactTransform[1].transforms.push({
 
 module.exports = {
   devtool: 'inline-source-map',
-  context: path.resolve(__dirname, '..'),
+  context: projectRootPath,
   entry: {
     'main': [
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
