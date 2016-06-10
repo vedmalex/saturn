@@ -8,6 +8,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var strip = require('strip-loader');
 
 var projectRootPath = process.cwd();
+var saturnRootPath = path.resolve(__dirname, '..');
 var assetsPath = path.resolve(projectRootPath, './static/dist');
 
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
@@ -56,11 +57,17 @@ module.exports = {
   },
   progress: true,
   resolve: {
-    modulesDirectories: [
-      'src',
-      'node_modules'
+    root: [
+      path.resolve(projectRootPath, './node_modules'),
+      path.resolve(saturnRootPath, './node_modules'),
     ],
     extensions: ['', '.js', '.jsx', '.json']
+  },
+  resolveLoader: {
+    root: [
+      path.resolve(projectRootPath, './node_modules'),
+      path.resolve(saturnRootPath, './node_modules'),
+    ]
   },
   plugins: [
     new CleanPlugin([assetsPath], { root: projectRootPath }),

@@ -1,21 +1,18 @@
 /* eslint-disable */
-require('babel-polyfill');
-
-// Webpack config for development
-var fs = require('fs');
-var path = require('path');
+const path = require('path');
 var webpack = require('webpack');
-
-var projectRootPath = process.cwd();
-var assetsPath = path.resolve(projectRootPath, './static/dist');
-
-var host = (process.env.HOST || 'localhost');
-var port = (+process.env.PORT + 1) || 3001;
-
-// https://github.com/halt-hammerzeit/webpack-isomorphic-tools
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 
+const config = require('./prod.config.js');
+
+// XXX: where should these come from
+var host = (process.env.HOST || 'localhost');
+var port = (+process.env.PORT + 1) || 3001;
+
+// XXX: prodConfig does actually load the full babelrc, but we augment it with
+// the dev section here. There's probably cleaner way to do this
+var fs = require('fs');
 var babelrc = fs.readFileSync(path.resolve(__dirname, '../babel/.babelrc'));
 var babelrcObject = {};
 
@@ -25,7 +22,6 @@ try {
   console.error('==>     ERROR: Error parsing your .babelrc.');
   console.error(err);
 }
-
 
 var babelrcObjectDevelopment = babelrcObject.env && babelrcObject.env.development || {};
 
@@ -65,54 +61,44 @@ reactTransform[1].transforms.push({
   locals: ['module']
 });
 
-module.exports = {
-  devtool: 'inline-source-map',
-  context: projectRootPath,
-  entry: {
-    'main': [
-      'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
-      // Client entry point is injected here by webpack-dev.js
-    ]
-  },
-  output: {
-    path: assetsPath,
-    filename: '[name]-[hash].js',
-    chunkFilename: '[name]-[chunkhash].js',
-    publicPath: 'http://' + host + ':' + port + '/dist/'
-  },
-  module: {
-    loaders: [
-      { test: /\.jsx?$/, exclude: require('../babel/babel-exclude'), loaders: ['babel?' + JSON.stringify(babelLoaderQuery), /*'eslint-loader' */]},
-      { test: /\.json$/, loader: 'json-loader' },
-      { test: /\.less$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap' },
-      { test: /\.scss$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap' },
-      { test: /\.css$/, loader: 'style!css?importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version' },
-      { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
-      { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
-      { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/octet-stream" },
-      { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file" },
-      { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=image/svg+xml" },
-      { test: webpackIsomorphicToolsPlugin.regular_expression('images'), loader: 'url-loader?limit=10240' }
-    ]
-  },
-  progress: true,
-  resolve: {
-    modulesDirectories: [
-      'src',
-      'node_modules'
-    ],
-    extensions: ['', '.js', '.jsx', '.json']
-  },
-  plugins: [
-    // hot reload
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.IgnorePlugin(/webpack-stats\.json$/),
-    new webpack.DefinePlugin({
-      __CLIENT__: true,
-      __SERVER__: false,
-      __DEVELOPMENT__: true,
-      __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
-    }),
-    webpackIsomorphicToolsPlugin.development()
-  ]
-};
+// We are just going to modify config here. It's fine because we'd never
+// load both configs in the one process
+config.devtool = 'inline-source-map';
+config.entry.main = [
+  'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
+  // Client entry point is injected here by webpack-dev.js
+];
+
+config.output.filename = '[name]-[hash].js';
+config.output.publicPath = 'http://' + host + ':' + port + '/dist/';
+
+// Possibly there could be more re-use for these with prod, but for now
+config.module.loaders = [
+  { test: /\.jsx?$/, exclude: require('../babel/babel-exclude'), loaders: ['babel?' + JSON.stringify(babelLoaderQuery), /*'eslint-loader' */]},
+  { test: /\.json$/, loader: 'json-loader' },
+  { test: /\.less$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap' },
+  { test: /\.scss$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap' },
+  { test: /\.css$/, loader: 'style!css?importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version' },
+  { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
+  { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
+  { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/octet-stream" },
+  { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file" },
+  { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=image/svg+xml" },
+  { test: webpackIsomorphicToolsPlugin.regular_expression('images'), loader: 'url-loader?limit=10240' }
+];
+
+// As above
+config.plugins = [
+  // hot reload
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.IgnorePlugin(/webpack-stats\.json$/),
+  new webpack.DefinePlugin({
+    __CLIENT__: true,
+    __SERVER__: false,
+    __DEVELOPMENT__: true,
+    __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
+  }),
+  webpackIsomorphicToolsPlugin.development()
+];
+
+module.exports = config;
