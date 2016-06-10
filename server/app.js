@@ -82,8 +82,6 @@ app.start = (routes) => {
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
-        // loadOnServer({...renderProps, store, helpers: {client}}).then(() => {
-        // });
 
         const component = (
           <ApolloProvider client={client}>
