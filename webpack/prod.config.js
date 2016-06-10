@@ -15,17 +15,6 @@ var assetsPath = path.resolve(projectRootPath, './static/dist');
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 
-var fs = require('fs');
-var babelrc = fs.readFileSync(path.resolve(__dirname, '../babel/.babelrc'));
-var babelLoaderQuery = {};
-
-try {
-  babelLoaderQuery = JSON.parse(babelrc);
-} catch (err) {
-  console.error('==>     ERROR: Error parsing your .babelrc.');
-  console.error(err);
-}
-
 module.exports = {
   devtool: 'source-map',
   context: projectRootPath,
@@ -42,7 +31,14 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.jsx?$/, exclude: require('../babel/babel-exclude'), loaders: [strip.loader('debug'), 'babel?' + JSON.stringify(babelLoaderQuery)]},
+      {
+        test: /\.jsx?$/,
+        exclude: require('../babel/babel-exclude'),
+        loaders: [
+          strip.loader('debug'),
+          'babel?presets=' + require.resolve('../babel/preset')
+        ]
+      },
       { test: /\.json$/, loader: 'json-loader' },
       { test: /\.less$/, loader: ExtractTextPlugin.extract('style', 'css?modules&importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap=true&sourceMapContents=true') },
       { test: /\.scss$/, loader: ExtractTextPlugin.extract('style', 'css?modules&importLoaders=2&sourceMap!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap=true&sourceMapContents=true') },

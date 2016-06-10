@@ -10,57 +10,6 @@ const config = require('./prod.config.js');
 var host = (process.env.HOST || 'localhost');
 var port = (+process.env.PORT + 1) || 3001;
 
-// XXX: prodConfig does actually load the full babelrc, but we augment it with
-// the dev section here. There's probably cleaner way to do this
-var fs = require('fs');
-var babelrc = fs.readFileSync(path.resolve(__dirname, '../babel/.babelrc'));
-var babelrcObject = {};
-
-try {
-  babelrcObject = JSON.parse(babelrc);
-} catch (err) {
-  console.error('==>     ERROR: Error parsing your .babelrc.');
-  console.error(err);
-}
-
-var babelrcObjectDevelopment = babelrcObject.env && babelrcObject.env.development || {};
-
-// merge global and dev-only plugins
-var combinedPlugins = babelrcObject.plugins || [];
-combinedPlugins = combinedPlugins.concat(babelrcObjectDevelopment.plugins);
-
-var babelLoaderQuery = Object.assign({}, babelrcObjectDevelopment, babelrcObject, {plugins: combinedPlugins});
-delete babelLoaderQuery.env;
-
-// Since we use .babelrc for client and server, and we don't want HMR enabled on the server, we have to add
-// the babel plugin react-transform-hmr manually here.
-
-// make sure react-transform is enabled
-babelLoaderQuery.plugins = babelLoaderQuery.plugins || [];
-var reactTransform = null;
-for (var i = 0; i < babelLoaderQuery.plugins.length; ++i) {
-  var plugin = babelLoaderQuery.plugins[i];
-  if (Array.isArray(plugin) && plugin[0] === 'react-transform') {
-    reactTransform = plugin;
-  }
-}
-
-if (!reactTransform) {
-  reactTransform = ['react-transform', {transforms: []}];
-  babelLoaderQuery.plugins.push(reactTransform);
-}
-
-if (!reactTransform[1] || !reactTransform[1].transforms) {
-  reactTransform[1] = Object.assign({}, reactTransform[1], {transforms: []});
-}
-
-// make sure react-transform-hmr is enabled
-reactTransform[1].transforms.push({
-  transform: 'react-transform-hmr',
-  imports: ['react'],
-  locals: ['module']
-});
-
 // We are just going to modify config here. It's fine because we'd never
 // load both configs in the one process
 config.devtool = 'inline-source-map';
@@ -74,7 +23,17 @@ config.output.publicPath = 'http://' + host + ':' + port + '/dist/';
 
 // Possibly there could be more re-use for these with prod, but for now
 config.module.loaders = [
-  { test: /\.jsx?$/, exclude: require('../babel/babel-exclude'), loaders: ['babel?' + JSON.stringify(babelLoaderQuery), /*'eslint-loader' */]},
+  {
+    test: /\.jsx?$/,
+    exclude: require('../babel/babel-exclude'),
+    loader: 'babel',
+    query: {
+      presets: [
+        require.resolve('../babel/preset'),
+        require.resolve('babel-preset-react-hmre')
+      ]
+    }
+  },
   { test: /\.json$/, loader: 'json-loader' },
   { test: /\.less$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!less?outputStyle=expanded&sourceMap' },
   { test: /\.scss$/, loader: 'style!css?modules&importLoaders=2&sourceMap&localIdentName=[local]___[hash:base64:5]!autoprefixer?browsers=last 2 version!sass?outputStyle=expanded&sourceMap' },
