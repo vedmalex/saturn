@@ -6,8 +6,9 @@ var camelcase = require('camelcase');
 
 // XXX: figure out the best way to hook up this dotenv / config
 require('dotenv').config({ silent: true });
-if (command === 'build' || command === 'start-prod' ||
-    command === 'start-prod-api' || command === 'start') {
+if (command === 'build' || command === 'start-prod'
+    || command === 'start-prod-api' || command === 'start'
+    || command == 'create') {
   process.env.NODE_ENV = 'production';
 } else {
   process.env.NODE_ENV = 'development';

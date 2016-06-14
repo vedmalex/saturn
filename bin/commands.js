@@ -1,15 +1,17 @@
 import path from 'path';
 import yargs from 'yargs';
 import { spawn } from 'child_process';
+import fs from 'fs-extra';
+import replace from 'replace-in-file';
 
 import webpackDev from '../server/webpack-dev';
 import webpackBuild from '../server/webpack-build';
 
 // XXX: is there a better way to do this? Can it come in via argv?
 const appRoot = process.cwd();
-const saturnRoot = __dirname;
-var saturn = path.resolve(saturnRoot, './saturn.js');
-const concurrently = path.resolve(saturnRoot, '../vendor/concurrently.js');
+const saturnRoot = path.resolve(__dirname, '..');
+var saturn = path.resolve(saturnRoot, './bin/saturn.js');
+const concurrently = path.resolve(saturnRoot, './vendor/concurrently.js');
 
 function appFile(filepath) {
   return path.resolve(appRoot, filepath);
@@ -22,12 +24,10 @@ function prepare(_argv) {
 
   // Map remaining arguments to paths inside the app
   const command = argv._.shift();
-  const files = argv._.map(appFile);
 
   return {
     command,
-    argv,
-    files,
+    argv
   };
 }
 
@@ -56,25 +56,15 @@ export function start(_argv) {
   doSpawn(concurrently, ['--kill-others', startProd, startProdApi]);
 };
 
-export function watchClient(_argv) {
-  const { files, argv } = prepare(_argv);
-  webpackDev(files.shift() || appFile(argv.appClient));
-};
-
-export function build(_argv) {
-  const { files, argv } = prepare(_argv);
-  webpackBuild(files.shift() || appFile(argv.appClient));
-};
-
 export function startApi(_argv) {
-  const { files, argv } = prepare(_argv);
-  require(files.shift() || appFile(argv.apiServer));
+  const { argv } = prepare(_argv);
+  require(appFile(argv._.shift() || argv.apiServer));
 };
 
 export { startApi as startDevApi, startApi as startProdApi };
 
 function startApp(_argv) {
-  const { files, argv } = prepare(_argv);
+  const { argv } = prepare(_argv);
   global.__CLIENT__ = false;
   global.__SERVER__ = true;
   global.__DISABLE_SSR__ = false;  // <----- DISABLES SERVER SIDE RENDERING FOR ERROR DEBUGGING
@@ -85,8 +75,34 @@ function startApp(_argv) {
   global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack/webpack-isomorphic-tools'))
     .development(__DEVELOPMENT__)
     .server(process.cwd(), function() {
-      require(files[0]);
+      require(appFile(argv._.shift() || argv.appServer));
     });
 }
 
 export { startApp as startDev, startApp as startProd };
+
+export function watchClient(_argv) {
+  const { argv } = prepare(_argv);
+  webpackDev(appFile(argv._.shift() || argv.appClient));
+};
+
+export function build(_argv) {
+  const { argv } = prepare(_argv);
+  webpackBuild(appFile(argv._.shift() || argv.appClient));
+};
+
+export function create(_argv) {
+  const { argv } = prepare(_argv);
+  const name = argv._.shift();
+
+  fs.copySync(path.resolve(saturnRoot, './skel'), name);
+  replace({
+    files: path.resolve(name, 'package.json'),
+    replace: '~name~',
+    with: name
+  });
+  console.log(`Created app ${name}.
+Install dependencies with \`npm install\`.
+Run the app in development with \`saturn dev\`.
+`);
+};
