@@ -1,10 +1,7 @@
 import React from 'react';
 import { Route, IndexRoute } from 'react-router';
+import Hello from './Hello';
 
 export default (
-  // <Route path="/" component={Layout}>
-  //   <IndexRoute component={Feed} />
-  //   <Route path="feed/:type" component={Feed} />
-  //   <Route path="submit" component={NewEntry} />
-  // </Route>
+  <Route path="/" component={Hello} />
 );
