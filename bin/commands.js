@@ -3,6 +3,8 @@ import yargs from 'yargs';
 import { spawn } from 'child_process';
 import fs from 'fs-extra';
 import replace from 'replace-in-file';
+import Mocha from 'mocha';
+import glob from 'glob';
 
 import webpackDev from '../server/webpack-dev';
 import webpackBuild from '../server/webpack-build';
@@ -10,7 +12,7 @@ import webpackBuild from '../server/webpack-build';
 // XXX: is there a better way to do this? Can it come in via argv?
 const appRoot = process.cwd();
 const saturnRoot = path.resolve(__dirname, '..');
-var saturn = path.resolve(saturnRoot, './bin/saturn.js');
+const saturn = path.resolve(saturnRoot, './bin/saturn.js');
 const concurrently = path.resolve(saturnRoot, './vendor/concurrently.js');
 
 function appFile(filepath) {
@@ -105,4 +107,19 @@ export function create(_argv) {
 Install dependencies with \`npm install\`.
 Run the app in development with \`saturn dev\`.
 `);
+};
+
+export function test(_argv) {
+  const mocha = new Mocha({});
+
+  glob(`${appRoot}/**/*.test?(s).js`, (err, files) => {
+    files.filter(f => !f.match('node_modules')).forEach(f => mocha.addFile(f));
+
+    // Run the tests.
+    mocha.run(function(failures){
+      process.on('exit', function () {
+        process.exit(failures);  // exit with non-zero status if there were failures
+      });
+    });
+  });
 };

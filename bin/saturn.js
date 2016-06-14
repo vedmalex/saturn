@@ -8,7 +8,7 @@ var camelcase = require('camelcase');
 require('dotenv').config({ silent: true });
 if (command === 'build' || command === 'start-prod'
     || command === 'start-prod-api' || command === 'start'
-    || command == 'create') {
+    || command == 'create' || command === 'test') {
   process.env.NODE_ENV = 'production';
 } else {
   process.env.NODE_ENV = 'development';
