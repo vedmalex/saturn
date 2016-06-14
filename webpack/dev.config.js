@@ -4,7 +4,8 @@ var webpack = require('webpack');
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 
-const config = require('./prod.config.js');
+const _ = require('lodash');
+const config = _.cloneDeep(require('./prod.config.js'));
 
 // XXX: where should these come from
 var host = (process.env.HOST || 'localhost');

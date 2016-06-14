@@ -47,6 +47,7 @@
     "body-parser": "^1.14.1",
     "bootstrap-sass": "^3.3.5",
     "bootstrap-sass-loader": "^1.0.9",
+    "camelcase": "^3.0.0",
     "chai": "^3.3.0",
     "chalk": "^1.1.3",
     "clean-webpack-plugin": "^0.1.6",
