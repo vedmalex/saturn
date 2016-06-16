@@ -1,6 +1,6 @@
 import path from 'path';
 import yargs from 'yargs';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import fs from 'fs-extra';
 import replace from 'replace-in-file';
 import Mocha from 'mocha';
@@ -33,10 +33,10 @@ function prepare(_argv) {
   };
 }
 
-function doSpawn(command, options) {
-  var child = spawn(command, options);
-  child.stdout.on('data', function(d) { console.log(d.toString()); });
-  child.stderr.on('data', function(d) { console.err(d.toString()); });
+function doSpawn(command, args, options) {
+  var child = spawn(command, args, Object.assign({
+    stdio: ['ignore', process.stdout, process.stderr]
+  }, options));
 }
 
 export function dev(_argv) {
@@ -120,6 +120,22 @@ export function test(_argv) {
       process.on('exit', function () {
         process.exit(failures);  // exit with non-zero status if there were failures
       });
+    });
+  });
+};
+
+// Deploy to galaxy
+// NOTE: requires `deploy-node` branch of meteor/meteor to be available
+//   in the path as `curmeteor` (note can't be an alias, use a symlink)
+export function deploy(_argv) {
+  const { argv } = prepare(_argv);
+
+  const bundleCommand = `${path.resolve(saturnRoot, './bin/bundle.sh')} ${appRoot}`;
+  console.log(`running ${bundleCommand}`);
+  exec(bundleCommand, (error, stdout, stderr) => {
+    const bundleDir = stdout;
+    doSpawn('curmeteor', ['deploy-node', argv._.shift()], {
+      cwd: bundleDir
     });
   });
 };
