@@ -4,43 +4,31 @@
 import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
 import { ApolloProvider } from 'react-apollo';
 import { Router, browserHistory } from 'react-router';
+import { createStore } from 'redux';
 
-import client from '../server/app/apollo-client';
+import ourClient from '../server/app/apollo-client';
+import DevTools from '../server/app/DevTools';
 
 const dest = document.getElementById('content');
 
-export default (routes) => {
+import ReactDOMServer from 'react-dom/server';
+
+export default ({ routes, client = ourClient, ...options}) => {
+  let store = options.store;
+  if (!store) {
+    client.initStore();
+    store = client.store;
+  }
+
   ReactDOM.render(
-    <ApolloProvider client={client}>
+    <ApolloProvider client={client} store={store}>
       <Router history={browserHistory}>
         {routes}
       </Router>
     </ApolloProvider>,
     dest
   );
-
-  if (process.env.NODE_ENV !== 'production') {
-    window.React = React; // enable debugger
-
-    if (!dest || !dest.firstChild || !dest.firstChild.attributes || !dest.firstChild.attributes['data-react-checksum']) {
-      console.error('Server-side React render was discarded. Make sure that your initial render does not contain any client-side code.');
-    }
-  }
-
-  // if (__DEVTOOLS__ && !window.devToolsExtension) {
-  //   const DevTools = require('./containers/DevTools/DevTools');
-  //   ReactDOM.render(
-  //     <ApolloProvider client={client}>
-  //       <div>
-  //         <Router history={browserHistory}>
-  //           {routes}
-  //         </Router>
-  //         <DevTools />
-  //       </div>
-  //     </ApolloProvider>,
-  //     dest
-  //   );
-  // }
 }

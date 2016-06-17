@@ -5,20 +5,10 @@ import { addTypenameToSelectionSet } from 'apollo-client/queries/queryTransform'
 import { registerGqlTag } from 'apollo-client/gql';
 registerGqlTag();
 
-
 const client = new ApolloClient({
   networkInterface: createNetworkInterface('/graphql', {
     credentials: 'same-origin',
   }),
-  queryTransformer: addTypenameToSelectionSet,
-  dataIdFromObject: (result) => {
-    if (result.id && result.__typename) {
-      return result.__typename + result.id;
-    }
-  },
 });
-
-// XXX: not sure if I should be doing this?
-client.initStore();
 
 export default client;

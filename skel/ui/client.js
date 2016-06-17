@@ -1,4 +1,10 @@
-import app from 'saturn-framework/client/app';
+import client from 'saturn-framework/server/app/apollo-client';
+import createStore from 'saturn-framework/redux/store';
+import createApp from 'saturn-framework/client/app';
+
+import count from './reducers/count';
+const store = createStore({ client, reducers: { count } });
+
 import routes from './routes';
 
-app(routes);
+createApp({ routes, client, store });

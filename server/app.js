@@ -13,49 +13,56 @@ import { match, RouterContext } from 'react-router';
 
 import config from '../config';
 import Html from './app/Html';
-import client from './app/apollo-client';
+import ourClient from '../server/app/apollo-client';
 
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
-const app = new Express();
-const server = new http.Server(app);
-const proxy = httpProxy.createProxyServer({
-  target: targetUrl,
-  ws: true
-});
 
-app.use(compression());
-// XXX: ??
-// app.use(favicon(path.join(__dirname, '..', 'static', 'favicon.ico')));
-
-app.use(Express.static(path.join(process.cwd(), 'static')));
-
-// Proxy to API server
-app.use('/graphql', (req, res) => {
-  proxy.web(req, res, {target: targetUrl + '/graphql'});
-});
-app.use('/login', (req, res) => {
-  proxy.web(req, res, {target: targetUrl + '/login'});
-});
-app.use('/logout', (req, res) => {
-  proxy.web(req, res, {target: targetUrl + '/logout'});
-});
-
-// added the error handling to avoid https://github.com/nodejitsu/node-http-proxy/issues/527
-proxy.on('error', (error, req, res) => {
-  let json;
-  if (error.code !== 'ECONNRESET') {
-    console.error('proxy error', error);
-  }
-  if (!res.headersSent) {
-    res.writeHead(500, {'content-type': 'application/json'});
+export default ({ routes, client = ourClient, ...options}) => {
+  let store = options.store;
+  if (!store) {
+    client.initStore();
+    store = client.store;
   }
 
-  json = {error: 'proxy_error', reason: error.message};
-  res.end(JSON.stringify(json));
-});
+  const app = new Express();
+  const server = new http.Server(app);
+  const proxy = httpProxy.createProxyServer({
+    target: targetUrl,
+    ws: true
+  });
 
-app.start = (routes) => {
+  app.use(compression());
+  // XXX: ??
+  // app.use(favicon(path.join(__dirname, '..', 'static', 'favicon.ico')));
+
+  app.use(Express.static(path.join(process.cwd(), 'static')));
+
+  // Proxy to API server
+  app.use('/graphql', (req, res) => {
+    proxy.web(req, res, {target: targetUrl + '/graphql'});
+  });
+  app.use('/login', (req, res) => {
+    proxy.web(req, res, {target: targetUrl + '/login'});
+  });
+  app.use('/logout', (req, res) => {
+    proxy.web(req, res, {target: targetUrl + '/logout'});
+  });
+
+  // added the error handling to avoid https://github.com/nodejitsu/node-http-proxy/issues/527
+  proxy.on('error', (error, req, res) => {
+    let json;
+    if (error.code !== 'ECONNRESET') {
+      console.error('proxy error', error);
+    }
+    if (!res.headersSent) {
+      res.writeHead(500, {'content-type': 'application/json'});
+    }
+
+    json = {error: 'proxy_error', reason: error.message};
+    res.end(JSON.stringify(json));
+  });
+
   app.use((req, res) => {
     if (__DEVELOPMENT__) {
       // Do not cache webpack stats: the script file would change since
@@ -74,7 +81,8 @@ app.start = (routes) => {
       return;
     }
 
-    match({ routes: routes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
+    match({ routes: routes, location: req.originalUrl },
+        (error, redirectLocation, renderProps) => {
       if (redirectLocation) {
         res.redirect(redirectLocation.pathname + redirectLocation.search);
       } else if (error) {
@@ -82,9 +90,8 @@ app.start = (routes) => {
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
-
         const component = (
-          <ApolloProvider client={client}>
+          <ApolloProvider client={client} store={store}>
             <RouterContext {...renderProps} />
           </ApolloProvider>
         );
@@ -93,8 +100,11 @@ app.start = (routes) => {
 
         global.navigator = {userAgent: req.headers['user-agent']};
 
-        res.send('<!doctype html>\n' +
-          ReactDOM.renderToString(<Html assets={webpackIsomorphicTools.assets()} component={component} store={client.store}/>));
+        const html = (
+          <Html assets={webpackIsomorphicTools.assets()}
+            component={component} store={store} />
+        );
+        res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
       } else {
         res.status(404).send('Not found');
       }
@@ -112,6 +122,6 @@ app.start = (routes) => {
   } else {
     console.error('==>     ERROR: No PORT environment variable has been specified');
   }
-}
 
-export default app;
+  return app;
+};
