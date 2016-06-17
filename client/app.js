@@ -10,7 +10,6 @@ import { Router, browserHistory } from 'react-router';
 import { createStore } from 'redux';
 
 import ourClient from '../server/app/apollo-client';
-import DevTools from '../server/app/DevTools';
 
 const dest = document.getElementById('content');
 
