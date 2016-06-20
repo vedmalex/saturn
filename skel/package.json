@@ -13,7 +13,7 @@
     "react": "^15.0.2",
     "react-apollo": "^0.3.4",
     "react-router": "^2.4.1",
-    "saturn-framework": "apollostack/saturn#0753fc451ad4c0eba1ac9ccf5e9f18b5e728ae80"
+    "saturn-framework": "^0.1.0"
   },
   "saturn": {
     "app-client": "./ui/client.js",
