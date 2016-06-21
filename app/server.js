@@ -8,23 +8,19 @@ import httpProxy from 'http-proxy';
 import path from 'path';
 import PrettyError from 'pretty-error';
 import http from 'http';
+import _ from 'lodash';
 
 import { match, RouterContext } from 'react-router';
 
 import config from '../config';
 import Html from './Html';
-import createClient from './apollo-client';
+import ourCreateClient from './apollo-client';
+import ourCreateStore from './store';
 
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
 
-export default ({ routes, client = createClient(), ...options}) => {
-  let store = options.store;
-  if (!store) {
-    client.initStore();
-    store = client.store;
-  }
-
+export default ({ routes, createClient = ourCreateClient, createStore = ourCreateStore }) => {
   const app = new Express();
   const server = new http.Server(app);
   const proxy = httpProxy.createProxyServer({
@@ -64,6 +60,9 @@ export default ({ routes, client = createClient(), ...options}) => {
   });
 
   app.use((req, res) => {
+    const client = createClient();
+    const store = createStore({ client });
+
     if (__DEVELOPMENT__) {
       // Do not cache webpack stats: the script file would change since
       // hot module replacement is enabled in the development env
@@ -96,15 +95,30 @@ export default ({ routes, client = createClient(), ...options}) => {
           </ApolloProvider>
         );
 
-        res.status(200);
+        // now wait for all queries in the store to go ready
+        console.log('subscribing')
+        const stopSubscription = store.subscribe(() => {
+          // console.log(store.getState().apollo.queries);
+          console.log(_.keys(store.getState().apollo.queries).length);
+          if (!_.some(store.getState().apollo.queries, 'loading')) {
+            console.log('>>>')
+            console.log('all queries ready')
+            stopSubscription();
+            res.status(200);
 
-        global.navigator = {userAgent: req.headers['user-agent']};
+            global.navigator = {userAgent: req.headers['user-agent']};
 
-        const html = (
-          <Html assets={webpackIsomorphicTools.assets()}
-            component={component} store={store} />
-        );
-        res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
+            const html = (
+              <Html assets={webpackIsomorphicTools.assets()}
+                component={component} store={store} />
+            );
+            res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
+          }
+        });
+
+        // render once, to initialize apollo queries
+        ReactDOM.renderToString(component);
+
       } else {
         res.status(404).send('Not found');
       }
