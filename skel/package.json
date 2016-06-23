@@ -17,8 +17,8 @@
     "saturn-framework": "^0.1.1"
   },
   "saturn": {
-    "app-client": "./ui/client.js",
-    "app-server": "./ui/server.js",
-    "api-server": "./api/index.js"
+    "app-client": "./ui",
+    "app-server": "./ui",
+    "api-server": "./api"
   }
 }

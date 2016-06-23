@@ -9,13 +9,11 @@ import { ApolloProvider } from 'react-apollo';
 import { Router, browserHistory } from 'react-router';
 import { createStore } from 'redux';
 
-import ourClient from '../server/app/apollo-client';
+import createClient from './apollo-client';
 
 const dest = document.getElementById('content');
 
-import ReactDOMServer from 'react-dom/server';
-
-export default ({ routes, client = ourClient, ...options}) => {
+export default ({ routes, client = createClient(), ...options}) => {
   let store = options.store;
   if (!store) {
     client.initStore();

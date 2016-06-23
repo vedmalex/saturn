@@ -3,7 +3,7 @@ import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 let devTools = f => f;
 let dehydratedState = {};
 
-if (typeof window !== 'undefined') {
+if (__CLIENT__) {
   if (window.devToolsExtension) {
     devTools = window.devToolsExtension();
   }

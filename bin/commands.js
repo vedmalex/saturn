@@ -6,8 +6,8 @@ import replace from 'replace-in-file';
 import Mocha from 'mocha';
 import glob from 'glob';
 
-import webpackDev from '../server/webpack-dev';
-import webpackBuild from '../server/webpack-build';
+import webpackDev from '../app/client/webpack-dev';
+import webpackBuild from '../app/client/webpack-build';
 
 // XXX: is there a better way to do this? Can it come in via argv?
 const appRoot = process.cwd();
