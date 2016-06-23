@@ -1,8 +1,8 @@
 var Express = require('express');
 var webpack = require('webpack');
 
-var config = require('../config');
-var webpackConfig = require('../webpack/dev.config');
+var config = require('../../config');
+var webpackConfig = require('../../webpack/dev.config');
 
 export default (clientFile) => {
   webpackConfig.entry.main.push(clientFile);

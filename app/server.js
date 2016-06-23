@@ -12,13 +12,13 @@ import http from 'http';
 import { match, RouterContext } from 'react-router';
 
 import config from '../config';
-import Html from './app/Html';
-import ourClient from '../server/app/apollo-client';
+import Html from './Html';
+import createClient from './apollo-client';
 
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
 
-export default ({ routes, client = ourClient, ...options}) => {
+export default ({ routes, client = createClient(), ...options}) => {
   let store = options.store;
   if (!store) {
     client.initStore();

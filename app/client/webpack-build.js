@@ -1,5 +1,5 @@
 import webpack from 'webpack';
-import webpackConfig from '../webpack/prod.config';
+import webpackConfig from '../../webpack/prod.config';
 
 export default clientFile => {
   webpackConfig.entry.main.push(clientFile);
