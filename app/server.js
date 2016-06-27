@@ -20,7 +20,11 @@ import ourCreateStore from './store';
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
 
-export default ({ routes, createClient = ourCreateClient, createStore = ourCreateStore }) => {
+export default ({
+  routes,
+  disableSSR = false,
+  createClient = ourCreateClient,
+  createStore = ourCreateStore }) => {
   const app = new Express();
   const server = new http.Server(app);
   const proxy = httpProxy.createProxyServer({
@@ -60,24 +64,18 @@ export default ({ routes, createClient = ourCreateClient, createStore = ourCreat
   });
 
   app.use((req, res) => {
-    const client = createClient();
-    const store = createStore({ client });
-
     if (__DEVELOPMENT__) {
       // Do not cache webpack stats: the script file would change since
       // hot module replacement is enabled in the development env
       webpackIsomorphicTools.refresh();
     }
 
-    // XXX: figure the equivalent to this out
-    function hydrateOnClient() {
-      res.send('<!doctype html>\n' +
-        ReactDOM.renderToString(<Html assets={webpackIsomorphicTools.assets()} store={client.store}/>));
-    }
-
-    if (__DISABLE_SSR__) {
-      hydrateOnClient();
-      return;
+    if (disableSSR) {
+      return res.send('<!doctype html>\n' +
+        ReactDOM.renderToString(
+          <Html assets={webpackIsomorphicTools.assets()}/>
+        )
+      );
     }
 
     match({ routes: routes, location: req.originalUrl },
@@ -89,6 +87,10 @@ export default ({ routes, createClient = ourCreateClient, createStore = ourCreat
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
+        const client = createClient();
+        const store = createStore({ client });
+
+
         const component = (
           <ApolloProvider client={client} store={store}>
             <RouterContext {...renderProps} />
@@ -96,13 +98,8 @@ export default ({ routes, createClient = ourCreateClient, createStore = ourCreat
         );
 
         // now wait for all queries in the store to go ready
-        console.log('subscribing')
         const stopSubscription = store.subscribe(() => {
-          // console.log(store.getState().apollo.queries);
-          console.log(_.keys(store.getState().apollo.queries).length);
           if (!_.some(store.getState().apollo.queries, 'loading')) {
-            console.log('>>>')
-            console.log('all queries ready')
             stopSubscription();
             res.status(200);
 

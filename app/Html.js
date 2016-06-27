@@ -23,6 +23,7 @@ export default class Html extends Component {
     const {assets, component, store} = this.props;
     const content = component ? ReactDOM.renderToString(component) : '';
     const head = Helmet.rewind();
+    const storeData = store && serialize(store.getState());
 
     return (
       <html lang="en-us">
@@ -51,7 +52,7 @@ export default class Html extends Component {
         </head>
         <body>
           <div id="content" dangerouslySetInnerHTML={{__html: content}}/>
-          <script dangerouslySetInnerHTML={{__html: `window.__data=${serialize(store.getState())};`}} charSet="UTF-8"/>
+          {storeData && <script dangerouslySetInnerHTML={{__html: `window.__data=${storeData};`}} charSet="UTF-8"/>}
           <script src={assets.javascript.main} charSet="UTF-8"/>
         </body>
       </html>
