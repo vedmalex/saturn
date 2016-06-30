@@ -12,14 +12,7 @@ export default clientFile => {
         console.error(err.details);
       }
     } else {
-      console.log(stats.toString({
-        colors: true,
-        errorDetails: true,
-        reasons: true,
-        cached: true,
-        cachedAssets: true,
-        modules: true
-      }));
+      console.log(stats.toString("minimal"));
     }
   });
 };
