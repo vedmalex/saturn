@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/apollostack/saturn#readme",
   "dependencies": {
-    "apollo-client": "^0.3.13",
+    "apollo-client": "^0.3.24",
     "apollo-server": "^0.1.2",
     "autoprefixer-loader": "^3.1.0",
     "babel-core": "^6.5.2",
