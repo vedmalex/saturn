@@ -48,8 +48,10 @@ chmod +x "$bundledir/programs/server/setup.sh"
 
 cat <<EOF > "$bundledir/main.js"
 var spawn = require('child_process').spawn;
+
+process.env.BABEL_DISABLE_CACHE = 1;
 var cmd = spawn('$NPM_PATH', ['run', 'start'], {
-  env: Object.assign({ BABEL_DISABLE_CACHE: 1 }, process.env),
+  env: process.env,
   stdio: ['ignore', process.stdout, process.stderr]
 });
 
