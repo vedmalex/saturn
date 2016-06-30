@@ -50,10 +50,25 @@ The paths for the app-client and server can be the same, if you write a universa
 
 The entry points are really just files that will be started in the various processes above, however Saturn provides some utilities that make sense to be imported by each of the above.
 
-  - [`'saturn-framework/api'`](https://github.com/apollostack/saturn/blob/master/api/index.js) provides a simple express server.
+### API server entrypoint
 
-  Typically you would just attach a `apollo-server` to the `/graphql` path.
+[`'saturn-framework/api'`](https://github.com/apollostack/saturn/blob/master/api/index.js) provides a simple express server.
 
+Typically you would just attach a `apollo-server` to the `/graphql` path.
+
+The simplest possible API server entrypoint looks like:
+
+```js
+import apiServer from 'saturn-framework/api';
+import { apolloServer } from 'apollo-server';
+import { schema, mocks } from './schema';
+
+apiServer.use('/graphql', apolloServer({ schema, mocks }));
+
+apiServer.start();
+```
+
+### Client/server app entrypoint
   - [`saturn-framework/app`](https://github.com/apollostack/saturn/blob/master/app/index.js) exports a `createApp` function which provides a universal API also avaliable at:
 
   - [`saturn-framework/app/client`](https://github.com/apollostack/saturn/blob/master/app/client.js) - takes a object of arguments:
@@ -67,6 +82,14 @@ The entry points are really just files that will be started in the various proce
   - [`saturn-framework/app/server`](https://github.com/apollostack/saturn/blob/master/app/server.js) - takes the same object of arguments, and unless server rendering is disabled with the `noSSR` argument:
 
    - Sets up an express server which renders the provided routes, and on each request, creates a client and store in a similar way, server-side-renders them, and returns the HTML + dehydrated data to the client, ready to be consumed by the client app.
+
+The simplest possible universal entrypoint looks like:
+
+```js
+import createApp from 'saturn-framework/app';
+import routes from './routes';
+createApp({ routes });
+```
 
 > Note that you don't have to import any of the above code from Saturn in your app if you don't want to. You can simply copy the relevant sections of code into your app where it makes sense. Of course if you import it, it will be easier to receive updates as the framework improves.
 
