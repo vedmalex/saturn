@@ -42,9 +42,9 @@ function doSpawn(command, args, options) {
 export function dev(_argv) {
   const { argv } = prepare(_argv);
 
-  var startDev = saturn + ' start-dev ' + argv.appServer;
+  var startDev = saturn + ' start-dev ' + (argv.appServer || argv.app);
   var startDevApi = saturn + ' start-dev-api ' + argv.apiServer;
-  var watchClient = saturn + ' watch-client ' + argv.appClient;
+  var watchClient = saturn + ' watch-client ' + (argv.appClient || argv.app);
 
   doSpawn(concurrently, ['--kill-others', startDev, startDevApi, watchClient]);
 };
@@ -52,7 +52,7 @@ export function dev(_argv) {
 export function start(_argv) {
   const { argv } = prepare(_argv);
 
-  var startProd = saturn + ' start-prod ' + argv.appServer;
+  var startProd = saturn + ' start-prod ' + (argv.appServer || argv.app);
   var startProdApi = saturn + ' start-prod-api ' + argv.apiServer;
 
   doSpawn(concurrently, ['--kill-others', startProd, startProdApi]);
@@ -77,7 +77,7 @@ function startApp(_argv) {
   global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack/webpack-isomorphic-tools'))
     .development(__DEVELOPMENT__)
     .server(process.cwd(), function() {
-      require(appFile(argv._.shift() || argv.appServer));
+      require(appFile(argv._.shift() || argv.appServer || argv.app));
     });
 }
 
@@ -85,12 +85,12 @@ export { startApp as startDev, startApp as startProd };
 
 export function watchClient(_argv) {
   const { argv } = prepare(_argv);
-  webpackDev(appFile(argv._.shift() || argv.appClient));
+  webpackDev(appFile(argv._.shift() || argv.appClient || argv.app));
 };
 
 export function build(_argv) {
   const { argv } = prepare(_argv);
-  webpackBuild(appFile(argv._.shift() || argv.appClient));
+  webpackBuild(appFile(argv._.shift() || argv.appClient || argv.app));
 };
 
 export function create(_argv) {
