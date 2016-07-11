@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import replace from 'replace-in-file';
 import Mocha from 'mocha';
 import glob from 'glob';
+import { version as saturnVersion } from '../package.json';
 
 import webpackDev from '../app/client/webpack-dev';
 import webpackBuild from '../app/client/webpack-build';
@@ -101,7 +102,12 @@ export function create(_argv) {
   replace({
     files: path.resolve(name, 'package.json'),
     replace: '~name~',
-    with: name
+    with: name,
+  });
+  replace({
+    files: path.resolve(name, 'package.json'),
+    replace: '~version~',
+    with: saturnVersion,
   });
   console.log(`Created app ${name}.
 Install dependencies with \`npm install\`.
