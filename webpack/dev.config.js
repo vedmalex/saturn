@@ -15,7 +15,7 @@ var port = (+process.env.PORT + 1) || 3001;
 // load both configs in the one process
 config.devtool = 'inline-source-map';
 config.entry.main = [
-  'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
+  'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr&reload=true',
   // Client entry point is injected here by webpack-dev.js
 ];
 

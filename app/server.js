@@ -97,8 +97,7 @@ export default ({
           </ApolloProvider>
         );
 
-        // now wait for all queries in the store to go ready
-        const stopSubscription = store.subscribe(() => {
+        const maybeRenderPage = () => {
           if (!_.some(store.getState().apollo.queries, 'loading')) {
             stopSubscription();
             res.status(200);
@@ -111,11 +110,16 @@ export default ({
             );
             res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
           }
-        });
+        }
+
+        // now wait for all queries in the store to go ready
+        const stopSubscription = store.subscribe(maybeRenderPage);
 
         // render once, to initialize apollo queries
         ReactDOM.renderToString(component);
 
+        // if the page has no queries, the store will never change
+        maybeRenderPage();
       } else {
         res.status(404).send('Not found');
       }
