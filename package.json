@@ -2,7 +2,7 @@
   "name": "saturn-framework",
   "version": "0.1.1",
   "description": "Microframework for Apollo app development",
-  "main": "index.js",
+  "main": "babel/preset.js",
   "bin": {
     "saturn": "./bin/saturn.js"
   },
