@@ -39,12 +39,26 @@ In order to make using the commands easier, typically you should configure the `
   "saturn": {
     "app-client": "path/to/client/entrypoint.js",
     "app-server": "path/to/server/entrypoint.js",
-    "api-server": "path/to/api/entrypoint.js"
+    "api-server": "path/to/api/entrypoint.js",
+    "webpack-dev": "path/to/webpack/dev.config",
+    "webpack-prod": "path/to/webpack/prod.config",
   }
 }
 ```
 
 The paths for the app-client and server can be the same, if you write a universal entrypoint.
+
+### Webpack configs
+
+In order to provide a custom Webpack config, you must specify a path to the file within the `"saturn"` section of your `package.json`. The config file must provide a default export of your Webpack config. 
+
+Within your specified config file you may import Saturn's default Webpack configuration.
+
+```js
+import config from 'saturn-framework/webpack/dev.config';
+
+export default config;
+```
 
 ## Entry points
 
