@@ -86,12 +86,12 @@ export { startApp as startDev, startApp as startProd };
 
 export function watchClient(_argv) {
   const { argv } = prepare(_argv);
-  webpackDev(appFile(argv._.shift() || argv.appClient || argv.app));
+  webpackDev(appFile(argv._.shift() || argv.appClient || argv.app), appFile(argv.webpackDev));
 };
 
 export function build(_argv) {
   const { argv } = prepare(_argv);
-  webpackBuild(appFile(argv._.shift() || argv.appClient || argv.app));
+  webpackBuild(appFile(argv._.shift() || argv.appClient || argv.app), appFile(argv.webpackProd));
 };
 
 export function create(_argv) {

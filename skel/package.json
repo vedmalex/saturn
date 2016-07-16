@@ -20,6 +20,8 @@
   "saturn": {
     "app-client": "./ui",
     "app-server": "./ui",
-    "api-server": "./api"
+    "api-server": "./api",
+    "webpack-dev": "./webpack/dev.config.js",
+    "webpack-prod": "./webpack/prod.config.js"
   }
 }
