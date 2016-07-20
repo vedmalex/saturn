@@ -1,16 +1,17 @@
-var Express = require('express');
-var webpack = require('webpack');
+import Express from 'express';
+import webpack from 'webpack';
+import config from '../../config';
 
-var config = require('../../config');
-var webpackConfig = require('../../webpack/dev.config');
+const defaultWebpackConfigPath = '../../webpack/dev.config';
 
-export default (clientFile) => {
+export default (clientFile, webpackConfigPath = defaultWebpackConfigPath) => {
+  const webpackConfig = require(webpackConfigPath);
   webpackConfig.entry.main.push(clientFile);
-  var compiler = webpack(webpackConfig);
+  const compiler = webpack(webpackConfig);
 
-  var host = config.host || 'localhost';
-  var port = (Number(config.port) + 1) || 3001;
-  var serverOptions = {
+  const host = config.host || 'localhost';
+  const port = (Number(config.port) + 1) || 3001;
+  const serverOptions = {
     contentBase: 'http://' + host + ':' + port,
     quiet: true,
     noInfo: true,
@@ -22,12 +23,12 @@ export default (clientFile) => {
     stats: {colors: true}
   };
 
-  var app = new Express();
+  const app = new Express();
 
   app.use(require('webpack-dev-middleware')(compiler, serverOptions));
   app.use(require('webpack-hot-middleware')(compiler));
 
-  app.listen(port, function onAppListening(err) {
+  app.listen(port, err => {
     if (err) {
       console.error(err);
     } else {

@@ -1,7 +1,9 @@
 import webpack from 'webpack';
-import webpackConfig from '../../webpack/prod.config';
 
-export default clientFile => {
+const defaultWebpackConfigPath = '../../webpack/prod.config';
+
+export default (clientFile, webpackConfigPath = defaultWebpackConfigPath) => {
+  const webpackConfig = require(webpackConfigPath);
   webpackConfig.entry.main.push(clientFile);
   const compiler = webpack(webpackConfig);
 
