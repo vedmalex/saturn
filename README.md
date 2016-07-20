@@ -146,3 +146,9 @@ npm link saturn-framework
 - It can be helpful to run commands with the `NO_PIPING=true` environment variable. This stops processes from restarting when files change and sometimes leads to more comprehensible error messages.
 
 - If you are developing an Apollo package you may need to `npm link` it both within your app and saturn (good luck with that!)
+
+## Credits
+
+Thanks to all [Contributors!](https://github.com/apollostack/saturn/graphs/contributors)
+
+Saturn (at least initially) is heavily inspired by (/ outright copied from) the [React Redux Universal Hot Example](https://github.com/erikras/react-redux-universal-hot-example), and [`hjs-webpack`](https://github.com/HenrikJoreteg/hjs-webpack).
