@@ -1,9 +1,5 @@
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 
-// Globally register gql template literal tag
-import { registerGqlTag } from 'apollo-client/gql';
-registerGqlTag();
-
 import config from '../config';
 
 let url;
