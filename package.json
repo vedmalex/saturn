@@ -97,6 +97,7 @@
     "yargs": "^4.7.1"
   },
   "devDependencies": {
+    "app-root-dir": "^1.0.2",
     "eslint": "1.10.3",
     "eslint-config-airbnb": "0.1.0",
     "eslint-loader": "^1.0.0",

@@ -16,9 +16,9 @@ if (command === 'build' || command === 'start-prod'
 }
 
 if (!process.env.NO_PIPING && process.env.NODE_ENV !== 'production') {
-  if (require('piping')({ hook: true })) {
+//  if (require('piping')({ hook: true })) {
     run();
-  }
+//  }
 } else {
   run();
 }
@@ -26,5 +26,5 @@ if (!process.env.NO_PIPING && process.env.NODE_ENV !== 'production') {
 function run() {
   require('../babel/server.babel'); // babel registration (runtime transpilation for node)
 
-  require('./commands')[camelcase(command)](originalArgv);
+  require('./commands.js');
 }
