@@ -1,10 +1,10 @@
 import path from 'path';
 import program from 'commander';
 import Mocha from 'mocha';
-
-import { version as saturnVersion } from '../package.json';
-import { description as saturnDescription } from '../package.json';
-import appRootDir from 'app-root-dir'
+import glob from 'glob';
+import { spawn, exec } from 'child_process';
+import appRootDir from 'app-root-dir';
+import { version as saturnVersion, description as saturnDescription } from '../package.json';
 
 // Determine the project root based on package.json and node_modules
 const projectRoot = appRootDir.get();
@@ -24,7 +24,7 @@ const projectConf = Object.assign({},
 const concurrently = path.resolve(saturnRoot, './vendor/concurrently.js');
 
 function doSpawn(command, args, options) {
-  var child = spawn(command, args, Object.assign({
+  spawn(command, args, Object.assign({
     stdio: ['ignore', process.stdout, process.stderr]
   }, options));
 }
@@ -42,7 +42,7 @@ program
     if (options.list) {
       console.log('Show list of starter kits');
     } else if (path) {
-      //doSpawn(concurrently, ['--kill-others', startProd, startProdApi]);
+      // doSpawn(concurrently, ['--kill-others', startProd, startProdApi]);
       console.log('Create %s', path);
       // If example set, use that for the app's code base.
       if (options.example) {
@@ -61,15 +61,13 @@ program
   .description('Run the Mocha test runner. Define tests in files named `*-test[s]-*.js`.')
   .action(() => {
     const mocha = new Mocha({});
-
-    glob(`${appRoot}/**/*.test?(s).js`, (err, files) => {
+    // Find all test files
+    glob(`${projectRoot}/**/*.test?(s).js`, (err, files) => {
       files.filter(f => !f.match('node_modules')).forEach(f => mocha.addFile(f));
-
       // Run the tests.
-      mocha.run(function(failures){
-        process.on('exit', function () {
-          process.exit(failures);  // Exit with non-zero status if there were failures.
-        });
+      mocha.run(failures => {
+         // Exit with non-zero status if there were failures.
+        process.on('exit', () => process.exit(failures));
       });
     });
   });
@@ -100,17 +98,18 @@ program
     }
   });
 
-  program
-    .command('deploy')
-    .description('Experimental Command - Deploys to Galaxy. Requires the deploy-node branch of Meteor checked out and available as curmeteor.')
-    .action(() => {
-      console.log('Deploy to Galaxy');
-    });
+program
+  .command('deploy')
+  //eslint-disable-next-line
+  .description('Experimental Command - Deploys to Galaxy.Requires the deploy-node branch of Meteor checked out and available as curmeteor.')
+  .action(() => {
+    console.log('Deploy to Galaxy');
+  });
 
 
 program.parse(process.argv);
 
 // Show help if no arguments were provided
 if (program.args && !program.args.length) {
-    program.help();
+  program.help();
 }
