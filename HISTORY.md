@@ -1,5 +1,8 @@
 ## vNEXT
 
+## 0.2.4
+ - Fix to ensure request headers get sent to proxy server
+
 ## 0.2.3
  - Fixes to allow SSR without requiring users to install `isomorphic-fetch` [Issue #21](https://github.com/apollostack/saturn/issues/21)
 
