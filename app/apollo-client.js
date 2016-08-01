@@ -14,9 +14,10 @@ if (__SERVER__) {
   url = '/graphql'
 }
 
-export default () => new ApolloClient({
+export default (headers = {}) => new ApolloClient({
   networkInterface: createNetworkInterface(url, {
     credentials: 'same-origin',
+    headers
   }),
   ...options,
 });
