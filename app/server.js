@@ -87,7 +87,8 @@ export default ({
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
-        // transfer request headers to networkInterface in order to avoid https://github.com/matthew-andrews/isomorphic-fetch/issues/83
+        // transfer request headers to networkInterface so that they're accessible to proxy server
+        // Addresses this issue: https://github.com/matthew-andrews/isomorphic-fetch/issues/83
         const client = createClient(req.headers);
         const store = createStore({ client });
 
