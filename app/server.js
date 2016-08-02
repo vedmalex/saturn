@@ -17,7 +17,7 @@ import Html from './Html';
 import ourCreateClient from './apollo-client';
 import ourCreateStore from './store';
 
-const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
+const targetUrl = `http://${config.apiHost}:${config.apiPort}`;
 const pretty = new PrettyError();
 
 export default ({
