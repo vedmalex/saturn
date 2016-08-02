@@ -23,6 +23,7 @@ const pretty = new PrettyError();
 export default ({
   routes,
   disableSSR = false,
+  exressRouter = (app, proxy)=>{},
   createClient = ourCreateClient,
   createStore = ourCreateStore }) => {
   const app = new Express();
@@ -62,6 +63,8 @@ export default ({
     json = {error: 'proxy_error', reason: error.message};
     res.end(JSON.stringify(json));
   });
+
+  exressRouter(app, proxy);
 
   app.use((req, res) => {
     if (__DEVELOPMENT__) {
