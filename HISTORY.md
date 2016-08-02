@@ -1,4 +1,6 @@
 ## vNEXT
+ - Improve: allow to overwrite default SSR-routines
+ - Improve: allow to reuse express app and proxy in application
 
 ## 0.2.4
  - Fix to ensure request headers get sent to proxy server
