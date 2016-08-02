@@ -20,9 +20,45 @@ import ourCreateStore from './store';
 const targetUrl = `http://${config.apiHost}:${config.apiPort}`;
 const pretty = new PrettyError();
 
+const ourSSR = ( { renderProps, createClient, createStore, req, res } )=> {
+  const client = createClient();
+  const store = createStore({ client });
+
+  const component = (
+    <ApolloProvider client={client} store={store}>
+      <RouterContext {...renderProps} />
+    </ApolloProvider>
+  );
+
+  const maybeRenderPage = () => {
+    if (!_.some(store.getState().apollo.queries, 'loading')) {
+      stopSubscription();
+      res.status(200);
+
+      global.navigator = {userAgent: req.headers['user-agent']};
+
+      const html = (
+        <Html assets={webpackIsomorphicTools.assets()}
+          component={component} store={store} />
+      );
+      res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
+    }
+  }
+
+  // now wait for all queries in the store to go ready
+  const stopSubscription = store.subscribe(maybeRenderPage);
+
+  // render once, to initialize apollo queries
+  ReactDOM.renderToString(component);
+
+  // if the page has no queries, the store will never change
+  maybeRenderPage();
+};
+
 export default ({
   routes,
   disableSSR = false,
+  serverRender = ourSSR,
   exressRouter = (app, proxy)=>{},
   createClient = ourCreateClient,
   createStore = ourCreateStore }) => {
@@ -90,41 +126,7 @@ export default ({
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
-        // transfer request headers to networkInterface so that they're accessible to proxy server
-        // Addresses this issue: https://github.com/matthew-andrews/isomorphic-fetch/issues/83
-        const client = createClient(req.headers);
-        const store = createStore({ client });
-
-
-        const component = (
-          <ApolloProvider client={client} store={store}>
-            <RouterContext {...renderProps} />
-          </ApolloProvider>
-        );
-
-        const maybeRenderPage = () => {
-          if (!_.some(store.getState().apollo.queries, 'loading')) {
-            stopSubscription();
-            res.status(200);
-
-            global.navigator = {userAgent: req.headers['user-agent']};
-
-            const html = (
-              <Html assets={webpackIsomorphicTools.assets()}
-                component={component} store={store} />
-            );
-            res.send('<!doctype html>\n' + ReactDOM.renderToStaticMarkup(html));
-          }
-        }
-
-        // now wait for all queries in the store to go ready
-        const stopSubscription = store.subscribe(maybeRenderPage);
-
-        // render once, to initialize apollo queries
-        ReactDOM.renderToString(component);
-
-        // if the page has no queries, the store will never change
-        maybeRenderPage();
+        serverRender({renderProps, createClient, createStore, Html, req, res});
       } else {
         res.status(404).send('Not found');
       }
