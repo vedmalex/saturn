@@ -1,4 +1,5 @@
 ## vNEXT
+ - move server side render to different location
 
 ## 0.2.4
  - Fix to ensure request headers get sent to proxy server
