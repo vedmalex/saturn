@@ -66,7 +66,7 @@ export default ({
 
   app.use((req, res) => {
     if (__DEVELOPMENT__) {
-      // Do not cache webpaRouterContextck stats: the script file would change since
+      // Do not cache webpack stats: the script file would change since
       // hot module replacement is enabled in the development env
       webpackIsomorphicTools.refresh();
     }
