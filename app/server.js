@@ -1,21 +1,20 @@
 import Express from 'express';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
-import { ApolloProvider } from 'react-apollo';
 import favicon from 'serve-favicon';
 import compression from 'compression';
 import httpProxy from 'http-proxy';
 import path from 'path';
 import PrettyError from 'pretty-error';
 import http from 'http';
-import _ from 'lodash';
 
-import { match, RouterContext } from 'react-router';
+import { match } from 'react-router';
 
 import config from '../config';
 import Html from './Html';
 import ourCreateClient from './apollo-client';
 import ourCreateStore from './store';
+import defaultSSR from './server-render/apollo-ssr';
 
 const targetUrl = `http://${config.apiHost}:${config.apiPort}`;
 const pretty = new PrettyError();
@@ -104,7 +103,7 @@ export default ({
 
   app.use((req, res) => {
     if (__DEVELOPMENT__) {
-      // Do not cache webpack stats: the script file would change since
+      // Do not cache webpaRouterContextck stats: the script file would change since
       // hot module replacement is enabled in the development env
       webpackIsomorphicTools.refresh();
     }
@@ -126,7 +125,14 @@ export default ({
         res.status(500);
         hydrateOnClient();
       } else if (renderProps) {
-        serverRender({renderProps, createClient, createStore, Html, req, res});
+        const client = createClient();
+        const store = createStore({ client });
+        const component = (
+          <ApolloProvider client={client} store={store}>
+            <RouterContext {...renderProps} />
+          </ApolloProvider>
+        );
+        serverRender({renderProps, client, store, Html, req, res, component});
       } else {
         res.status(404).send('Not found');
       }
