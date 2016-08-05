@@ -1,4 +1,5 @@
 ## vNEXT
+ - make express server extensible in derived project
 
 ## 0.2.4
  - Fix to ensure request headers get sent to proxy server
