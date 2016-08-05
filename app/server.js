@@ -1,6 +1,7 @@
 import Express from 'express';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
+import { ApolloProvider } from 'react-apollo';
 import favicon from 'serve-favicon';
 import compression from 'compression';
 import httpProxy from 'http-proxy';
@@ -8,7 +9,7 @@ import path from 'path';
 import PrettyError from 'pretty-error';
 import http from 'http';
 
-import { match } from 'react-router';
+import { match, RouterContext } from 'react-router';
 
 import config from '../config';
 import Html from './Html';
