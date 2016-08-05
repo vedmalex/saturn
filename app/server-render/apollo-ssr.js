@@ -1,6 +1,4 @@
-import Html from './Html';
-import { ApolloProvider } from 'react-apollo';
-import { RouterContext } from 'react-router';
+import Html from '../Html';
 import _ from 'lodash';
 import ReactDOM from 'react-dom/server';
 
